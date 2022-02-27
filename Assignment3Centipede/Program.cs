@@ -7,7 +7,7 @@ namespace Assignment3Centipede
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (var game = new GameState())
                 game.Run();
         }
     }
