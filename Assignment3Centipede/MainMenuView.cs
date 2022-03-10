@@ -32,13 +32,13 @@ namespace Assignment3Centipede
             // This is the technique I'm using to ensure one keypress makes one menu navigation move
             if (!m_waitForKeyRelease)
             {
-                // Arrow keys to navigate the menu
-                if (Keyboard.GetState().IsKeyDown(Keys.Down))
+                // Arrow keys to navigate the menu and don't go out of bounds
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_currentSelection != MenuState.Quit)
                 {
                     m_currentSelection = m_currentSelection + 1;
                     m_waitForKeyRelease = true;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Up))
+                if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_currentSelection != MenuState.NewGame)
                 {
                     m_currentSelection = m_currentSelection - 1;
                     m_waitForKeyRelease = true;

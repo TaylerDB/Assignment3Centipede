@@ -27,7 +27,7 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/menu-select.spritefont
 
-#begin Images/MushNorm/MushNorm1.png
+#begin Images/MushNorm/NormMush0.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -37,9 +37,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Images/MushNorm/MushNorm1.png
+/build:Images/MushNorm/NormMush0.png
 
-#begin Images/MushNorm/MushNorm2.png
+#begin Images/MushNorm/NormMush1.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -49,9 +49,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Images/MushNorm/MushNorm2.png
+/build:Images/MushNorm/NormMush1.png
 
-#begin Images/MushNorm/MushNorm3.png
+#begin Images/MushNorm/NormMush2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -61,9 +61,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Images/MushNorm/MushNorm3.png
+/build:Images/MushNorm/NormMush2.png
 
-#begin Images/MushNorm/MushNorm4.png
+#begin Images/MushNorm/NormMush3.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -73,7 +73,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Images/MushNorm/MushNorm4.png
+/build:Images/MushNorm/NormMush3.png
 
 #begin Images/Ship/Bullet.png
 /importer:TextureImporter
