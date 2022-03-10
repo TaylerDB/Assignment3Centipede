@@ -13,5 +13,10 @@ namespace Assignment3Centipede
             get { return hit; }
             set { hit = value; }
         }
+
+        public void hitMushroom()
+        {
+            hit += 1;
+        }
     }
 }

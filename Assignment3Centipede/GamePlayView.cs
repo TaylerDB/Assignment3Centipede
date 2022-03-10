@@ -4,19 +4,25 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Assignment3Centipede
 {
     public class GamePlayView : GameStateView
     {
+        // Consts
+        const double fireRate = 0.15f;
+        const int bulletSpeed = 10;
+
         private SpriteFont m_font;
         private const string MESSAGE = "Isn't this game fun!";
 
         // Rectangles
-        private Rectangle m_NormMushBox;
+        private Rectangle m_MushroomBox;
         private Rectangle m_ShipBox;
-        private Rectangle m_BulletBox;
 
         // Textures
         private Texture2D m_NormMush1Texture;
@@ -27,15 +33,18 @@ namespace Assignment3Centipede
         private Texture2D m_BulletTexture;
         private Texture2D m_ShipTexture;
         
-        private int shipxPos = 0;
-
         // Call Mushroom class
         HelpView helpView = new HelpView();
         Mushroom mushroom = new Mushroom();
         Ship ship = new Ship();
 
+        TimeSpan fireRateTimer = TimeSpan.FromSeconds(0);
+
         // Data structures
-        Dictionary<int,Rectangle> mushroomList = new Dictionary<int, Rectangle>();
+        List<Rectangle> mushroomList = new List<Rectangle>();
+
+        List<object> mushroomClassList = new List<object>();
+
         List<Rectangle> bulletList = new List<Rectangle>();
 
         public override void loadContent(ContentManager contentManager)
@@ -55,10 +64,14 @@ namespace Assignment3Centipede
             Random xPos = new Random();
             Random yPos = new Random();
 
-            // Populate Mushroom list - use a dictionary
-            for (int i = 0; i <75; i++)
+            // Populate Mushroom list and class
+            for (int i = 0; i < 75; i++)
             {
-                mushroomList.Add(i, m_NormMushBox = new Rectangle(xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25),
+                // Add to mushroom class
+                mushroomClassList.Add(new Mushroom());
+
+                // Add to mushroom dictionary
+                mushroomList.Add(new Rectangle(xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25),
                     yPos.Next(25, m_graphics.GraphicsDevice.Viewport.Height - 100), 25, 25));
             }
 
@@ -70,6 +83,7 @@ namespace Assignment3Centipede
 
         public override GameStateEnum processInput(GameTime gameTime)
         {
+
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 return GameStateEnum.MainMenu;
@@ -81,31 +95,18 @@ namespace Assignment3Centipede
             ship.moveY();
             m_ShipBox.Y = ship.yPos;
 
-
-            // I could just use this and not my ship class for movement
-
-            //if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_ShipBox.Y != (m_graphics.GraphicsDevice.Viewport.Height * .7))
-            //{
-            //    m_ShipBox.Y -= 5;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_ShipBox.Y != m_graphics.GraphicsDevice.Viewport.Height - 25)
-            //{
-            //    m_ShipBox.Y += 5;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.Left) && m_ShipBox.X != 0)
-            //{
-            //    m_ShipBox.X -= 5;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.Right) && m_ShipBox.X != m_graphics.GraphicsDevice.Viewport.Width - 25)
-            //{
-            //    m_ShipBox.X += 5;
-            //}
-
             // Shoot bullets
             if (Keyboard.GetState().IsKeyDown(helpView.Shoot))
             {
-                //Thread.Sleep(100);
-                bulletList.Add(new Rectangle(m_ShipBox.X + 5, m_ShipBox.Y - 25, 15, 30));
+                // Check game time for fire rate
+                if (fireRateTimer.TotalSeconds > fireRate)
+                {
+                    // Add bullet to list
+                    bulletList.Add(new Rectangle(m_ShipBox.X + 5, m_ShipBox.Y - 25, 15, 30));
+                    
+                    // Reset fire rate timer to zero
+                    fireRateTimer = TimeSpan.FromSeconds(0);
+                }
             }
 
             return GameStateEnum.GamePlay;
@@ -120,24 +121,30 @@ namespace Assignment3Centipede
                 new Vector2(m_graphics.PreferredBackBufferWidth / 2 - stringSize.X / 2, m_graphics.PreferredBackBufferHeight / 2 - stringSize.Y), Color.Yellow);
 
             // Draw mushrooms - call a mushroomRender class, pass m_spriteBatch to constructer
-            foreach (var value in mushroomList)
+            for (int i = 0; i < mushroomList.Count; i++)
             {
-                if (mushroom.Hit == 0)
+                var mush = (Mushroom)mushroomClassList.ElementAt(i);
+                if (mush.Hit == 0)
                 {
-                    m_spriteBatch.Draw(m_NormMush1Texture, value.Value, Color.White);
+                    m_spriteBatch.Draw(m_NormMush1Texture, mushroomList[i], Color.White);
+                    mushroomClassList[i] = mush;
                 }
-                if (mushroom.Hit == 1)
+                if (mush.Hit == 1)
                 {
-                    m_spriteBatch.Draw(m_NormMush2Texture, value.Value, Color.White);
+                    m_spriteBatch.Draw(m_NormMush2Texture, mushroomList[i], Color.White);
+                    mushroomClassList[i] = mush;
                 }
-                if (mushroom.Hit == 2)
+                if (mush.Hit == 2)
                 {
-                    m_spriteBatch.Draw(m_NormMush3Texture, value.Value, Color.White);
+                    m_spriteBatch.Draw(m_NormMush3Texture, mushroomList[i], Color.White);
+                    mushroomClassList[i] = mush;
                 }
-                if (mushroom.Hit == 3)
+                if (mush.Hit == 3)
                 {
-                    m_spriteBatch.Draw(m_NormMush4Texture, value.Value, Color.White);
+                    m_spriteBatch.Draw(m_NormMush4Texture, mushroomList[i], Color.White);
+                    mushroomClassList[i] = mush;
                 }
+                    
             }
 
             // Draw ship
@@ -157,23 +164,64 @@ namespace Assignment3Centipede
 
         public override void update(GameTime gameTime)
         {
-            // TODO : Get bullets to move up screen
-
+            // Increase fire rate timer
+            fireRateTimer += gameTime.ElapsedGameTime;
+            
+            // Update bullet position
             if (bulletList.Count > 0)
             {
                 for (int i = 0; i < bulletList.Count; i++)
                 {
-                    var bullet = bulletList[i];
-                    bullet.Y -= 5;
+                    bool bulletAlive = true;
 
-                    if (bullet.Y < 0)
-                        bulletList.RemoveAt(i);
-                    else
-                        bulletList[i] = bullet;
-                    //bulletList[i].Y -= 5;
+                    var bullet = bulletList[i];
+                    bullet.Y -= bulletSpeed;
+
+                    // Check for collison on mushrooms
+                    for (int m = 0; m < mushroomList.Count; m++)
+                    {
+                        // Get a copy
+                        var mushList = mushroomList[m];
+                        var mush = (Mushroom)mushroomClassList.ElementAt(m);
+
+                        // Check if bullet is within parameters of mushroom
+                        if (((bullet.X >= mushList.X - 25 ) && (bullet.X <= mushList.X + 25)) && ((bullet.Y >= mushList.Y - 25) && (bullet.Y <= mushList.Y + 25)))
+                        {
+                            // Tell mushroom
+                            mush.hitMushroom();
+
+                            // Remove bullet
+                            bulletList.RemoveAt(i);
+                            bulletAlive = false;
+                        }
+
+                        // Check if mushroom needs to be removed
+                        if (mush.Hit > 3)
+                        {
+                            mushroomClassList.RemoveAt(m);
+                            mushroomList.RemoveAt(m);
+                        }
+                        else
+                        {
+                            // Set copy back to original
+                            mushroomClassList[m] = mush;
+                            mushroomList[m] = mushList;
+                        }
+                    }
+
+                    // Check if bullet is still alive
+                    if (bulletAlive)
+                    {
+                        // Kill bullet if it reaches top of the screen
+                        if (bullet.Y < 0)
+                            bulletList.RemoveAt(i);
+
+                        // Set copy back to original
+                        else
+                            bulletList[i] = bullet;
+                    }
                 }
             }
-            //m_BulletBox.Y -= 5;
         }
     }
 }

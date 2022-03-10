@@ -13,6 +13,8 @@ namespace Assignment3Centipede
 
         HelpView helpView = new HelpView();
 
+        private const int shipMovementSpeed = 10;
+
         // Default constructor
         public Ship() { }
 
@@ -38,26 +40,24 @@ namespace Assignment3Centipede
         {
             if (Keyboard.GetState().IsKeyDown(helpView.MoveLeft) && shipRec.X != 0)
             {
-                shipRec.X -= 5;
+                shipRec.X -= shipMovementSpeed;
             }
             if (Keyboard.GetState().IsKeyDown(helpView.MoveRight) && shipRec.X != m_graphics.GraphicsDevice.Viewport.Width - 25)
             {
-                shipRec.X += 5;
+                shipRec.X += shipMovementSpeed;
             }
         }
 
         public void moveY()
         {
-            if (Keyboard.GetState().IsKeyDown(helpView.MoveUp) && shipRec.Y != (m_graphics.GraphicsDevice.Viewport.Height * .7))
+            if (Keyboard.GetState().IsKeyDown(helpView.MoveUp) && shipRec.Y >= (m_graphics.GraphicsDevice.Viewport.Height * .7))
             {
-                shipRec.Y -= 5;
+                shipRec.Y -= shipMovementSpeed;
             }
             if (Keyboard.GetState().IsKeyDown(helpView.MoveDown) && shipRec.Y != m_graphics.GraphicsDevice.Viewport.Height - 25)
             {
-                shipRec.Y += 5;
+                shipRec.Y += shipMovementSpeed;
             }
-            //else
-            //    return 0;
         }
     }
 }
