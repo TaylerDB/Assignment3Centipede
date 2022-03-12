@@ -13,7 +13,11 @@ namespace Assignment3Centipede
 
         HelpView helpView = new HelpView();
 
+        //GameModel gameModel = new GameModel();
+
         private const int shipMovementSpeed = 10;
+
+        int lives = 3;
 
         // Default constructor
         public Ship() { }
@@ -36,28 +40,52 @@ namespace Assignment3Centipede
             set { shipRec.Y = value; }
         }
 
-        public void moveX()
+        public int Lives
         {
-            if (Keyboard.GetState().IsKeyDown(helpView.MoveLeft) && shipRec.X != 0)
-            {
-                shipRec.X -= shipMovementSpeed;
-            }
+            get { return lives; }
+            set { lives = value; }
+        }
+
+        public void moveRight()
+        {
+            // Move right
             if (Keyboard.GetState().IsKeyDown(helpView.MoveRight) && shipRec.X != m_graphics.GraphicsDevice.Viewport.Width - 25)
             {
                 shipRec.X += shipMovementSpeed;
             }
         }
 
-        public void moveY()
+        public void moveLeft()
         {
+            // Move left
+            if (Keyboard.GetState().IsKeyDown(helpView.MoveLeft) && shipRec.X != 0)
+            {
+                shipRec.X -= shipMovementSpeed;
+            }
+        }
+
+        public void moveUp()
+        {
+            // Move up
             if (Keyboard.GetState().IsKeyDown(helpView.MoveUp) && shipRec.Y >= (m_graphics.GraphicsDevice.Viewport.Height * .7))
             {
                 shipRec.Y -= shipMovementSpeed;
             }
+        }
+
+        public void moveDown()
+        { 
+            // Move down
             if (Keyboard.GetState().IsKeyDown(helpView.MoveDown) && shipRec.Y != m_graphics.GraphicsDevice.Viewport.Height - 25)
             {
                 shipRec.Y += shipMovementSpeed;
             }
         }
+
+        public void takeLives()
+        {
+            lives--;
+        }
+
     }
 }

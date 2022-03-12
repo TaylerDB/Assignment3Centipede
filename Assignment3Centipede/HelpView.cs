@@ -48,6 +48,7 @@ namespace Assignment3Centipede
         private bool loading = false;
 
         List<Keys> keyList = new List<Keys>();
+        List<Keys> keyListUp = new List<Keys>();
 
         private static Keys V_MOVEUP = Keys.Up;
         private static Keys V_MOVEDOWN = Keys.Down;
@@ -92,15 +93,8 @@ namespace Assignment3Centipede
 
 
             // TODO: Figure out why loading doesn't work
-            //loadSomething();
-            //if (m_loadedState != null)
-            //{
-            //    V_MOVEUP = m_loadedState.Up;
-            //    V_MOVEDOWN = m_loadedState.Down;
-            //    V_MOVELEFT = m_loadedState.Left;
-            //    V_MOVERIGHT = m_loadedState.Right;
-            //    V_SHOOT = m_loadedState.Shoot;
-            //}
+            loadSomething();
+ 
         }
 
         //static KeyboardState currentKeyState;
@@ -108,6 +102,7 @@ namespace Assignment3Centipede
 
         public override GameStateEnum processInput(GameTime gameTime)
         {
+            bool enterPressed = false;
 
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
@@ -118,12 +113,12 @@ namespace Assignment3Centipede
             if (!m_waitForKeyRelease)
             {
                 // Arrow keys to navigate the menu
-                if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_currentSelection != ControlsState.Shoot)
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_currentSelection != ControlsState.Shoot && !enterPressed)
                 {
                     m_currentSelection = m_currentSelection + 1;
                     m_waitForKeyRelease = true;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_currentSelection != ControlsState.Up)
+                if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_currentSelection != ControlsState.Up && !enterPressed)
                 {
                     m_currentSelection = m_currentSelection - 1;
                     m_waitForKeyRelease = true;
@@ -157,17 +152,19 @@ namespace Assignment3Centipede
                                 // Set key press to variable
                                 Debug.WriteLine("This is what I want: ", keyList[i].ToString());
                                 V_MOVEUP = keyList[i];
-                                
+
                                 // Update string
                                 S_MOVEUP = keyList[i].ToString();
-                                
+
+                                // Clear keyList
+                                //keyList.Clear();
+                                saveSomething();
                             }
                         }
                     }
 
                     // Clear keyList
                     keyList.Clear();
-                    saveSomething();
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Down)
@@ -187,13 +184,16 @@ namespace Assignment3Centipede
                                 // Update string
                                 S_MOVEDOWN = keyList[i].ToString();
 
+                                // Clear keyList
+                                //keyList.Clear();
+                                saveSomething();
                             }
                         }
                     }
 
                     // Clear keyList
                     keyList.Clear();
-                    saveSomething();
+                    //saveSomething();
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Left)
@@ -213,13 +213,16 @@ namespace Assignment3Centipede
                                 // Update string
                                 S_MOVELEFT = keyList[i].ToString();
 
+                                // Clear keyList
+                                //keyList.Clear();
+                                saveSomething();
                             }
                         }
                     }
 
                     // Clear keyList
                     keyList.Clear();
-                    saveSomething();
+                    //saveSomething();
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Right)
@@ -239,13 +242,16 @@ namespace Assignment3Centipede
                                 // Update string
                                 S_MOVERIGHT = keyList[i].ToString();
 
+                                // Clear keyList
+                                //keyList.Clear();
+                                saveSomething();
                             }
                         }
                     }
 
                     // Clear keyList
                     keyList.Clear();
-                    saveSomething();
+                    //saveSomething();
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Shoot)
@@ -265,13 +271,17 @@ namespace Assignment3Centipede
                                 // Update string
                                 S_SHOOT = keyList[i].ToString();
 
+                                // Clear keyList
+                                //keyList.Clear();
+                                saveSomething();
+
                             }
                         }
                     }
 
                     // Clear keyList
                     keyList.Clear();
-                    saveSomething();
+                    //saveSomething();
                 }
             }
 
@@ -311,7 +321,7 @@ namespace Assignment3Centipede
                 {
                     try
                     {
-                        using (IsolatedStorageFileStream fs = storage.OpenFile("HighScores.xml", FileMode.OpenOrCreate))
+                        using (IsolatedStorageFileStream fs = storage.OpenFile("Controls.xml", FileMode.OpenOrCreate))
                         {
                             if (fs != null)
                             {
@@ -358,14 +368,27 @@ namespace Assignment3Centipede
                 {
                     try
                     {
-                        if (storage.FileExists("HighScores.xml"))
+                        if (storage.FileExists("Controls.xml"))
                         {
-                            using (IsolatedStorageFileStream fs = storage.OpenFile("HighScores.xml", FileMode.Open))
+                            using (IsolatedStorageFileStream fs = storage.OpenFile("Controls.xml", FileMode.Open))
                             {
                                 if (fs != null)
                                 {
                                     XmlSerializer mySerializer = new XmlSerializer(typeof(ControlSaveState));
                                     m_loadedState = (ControlSaveState)mySerializer.Deserialize(fs);
+
+                                    // Set keys
+                                    V_MOVEUP = m_loadedState.Up;
+                                    V_MOVEDOWN = m_loadedState.Down;
+                                    V_MOVELEFT = m_loadedState.Left;
+                                    V_MOVERIGHT = m_loadedState.Right;
+                                    V_SHOOT = m_loadedState.Shoot;
+
+                                    S_MOVEUP = m_loadedState.Up.ToString();
+                                    S_MOVEDOWN = m_loadedState.Down.ToString();
+                                    S_MOVELEFT = m_loadedState.Left.ToString();
+                                    S_MOVERIGHT = m_loadedState.Right.ToString();
+                                    S_SHOOT = m_loadedState.Shoot.ToString();
                                 }
                             }
                         }
@@ -417,16 +440,6 @@ namespace Assignment3Centipede
 
         public override void update(GameTime gameTime)
         {
-            //GetState();
-            //loadSomething();
-            //if (m_loadedState != null)
-            //{
-            //    V_MOVEUP = m_loadedState.Up;
-            //    V_MOVEDOWN = m_loadedState.Down;
-            //    V_MOVELEFT = m_loadedState.Left;
-            //    V_MOVERIGHT = m_loadedState.Right;
-            //    V_SHOOT = m_loadedState.Shoot;
-            //}
         }
     }
 }

@@ -9,6 +9,12 @@ namespace Assignment3Centipede
         protected GraphicsDeviceManager m_graphics;
         protected SpriteBatch m_spriteBatch;
 
+        public GraphicsDeviceManager M_Graphics
+        {
+            get { return m_graphics; }
+            set { m_graphics = value; }
+        }
+
         public void initialize(GraphicsDevice graphicsDevice, GraphicsDeviceManager graphics)
         {
             m_graphics = graphics;

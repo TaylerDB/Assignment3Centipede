@@ -15,8 +15,11 @@ namespace Assignment3Centipede
         /// <summary>
         /// Overloaded constructor used to create an object for long term storage
         /// </summary>
-        /// <param name="score"></param>
-        /// <param name="level"></param>
+        /// <param name="up"></param>
+        /// <param name="down"></param>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="shoot"></param>
         public ControlSaveState(Keys up, Keys down, Keys left, Keys right, Keys shoot)
         {
             this.Up = up;
