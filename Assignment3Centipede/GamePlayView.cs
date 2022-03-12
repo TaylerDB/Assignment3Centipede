@@ -22,7 +22,8 @@ namespace Assignment3Centipede
 
         public override void loadContent(ContentManager contentManager)
         {
-            m_model.loadContent(contentManager, m_graphics);
+            m_model = new GameModel(m_graphics);
+            m_model.loadContent(contentManager);
 
         }
 
@@ -41,7 +42,7 @@ namespace Assignment3Centipede
 
         public override void render(GameTime gameTime)
         {
-            m_model.render(m_spriteBatch, gameTime, m_graphics);
+            m_model.render(m_spriteBatch, gameTime);
 
             //Vector2 stringSize = m_font.MeasureString(MESSAGE);
             //m_spriteBatch.DrawString(m_font, MESSAGE,

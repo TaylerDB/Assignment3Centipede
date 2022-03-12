@@ -11,11 +11,12 @@ namespace Assignment3Centipede
 {
     class GameModel
     {
-        private GraphicsDeviceManager graphics;
+        private GraphicsDeviceManager m_graphics;
 
 
         // Consts
         const double fireRate = 0.15f;
+        const double mushroomSpawnRate = 0.5f;
         private const int shipMovementSpeed = 5;
         const int bulletSpeed = 10;
 
@@ -32,6 +33,8 @@ namespace Assignment3Centipede
         private Rectangle m_ShipBoxLife2;
         private Rectangle m_ShipBoxLife3;
 
+        private Rectangle m_FleeBox;
+
         // Textures
         private Texture2D m_NormMush1Texture;
         private Texture2D m_NormMush2Texture;
@@ -41,16 +44,30 @@ namespace Assignment3Centipede
         private Texture2D m_BulletTexture;
         private Texture2D m_ShipTexture;
 
+
         HelpView helpView = new HelpView();
-        //Mushroom mushroom = new Mushroom();
         Ship ship = new Ship();
 
-        
+        private Objects.Flee flee;
+        private AnimatedSprite fleeRenderer;
+
+        bool spawnFlee = true;
+        int fleeMushCount = 0;
 
         TimeSpan fireRateTimer = TimeSpan.FromSeconds(0);
+        TimeSpan mushroomSpawnTimer = TimeSpan.FromSeconds(0);
 
         // Data structures
         List<Rectangle> mushroomList = new List<Rectangle>();
+        //List<object> 
+
+        // Default constructor
+        public GameModel() { }
+
+        public GameModel(GraphicsDeviceManager m_graphics)
+        {
+            this.m_graphics = m_graphics;
+        }
 
         public List<Rectangle> MushroomList
         {
@@ -62,27 +79,12 @@ namespace Assignment3Centipede
 
         List<Rectangle> bulletList = new List<Rectangle>();
 
-        //private Player m_player = new Player();
-        //private Centipede m_centipede = new Centipede();
-        // private List<Bullet> m_bullets = new ...
-
-        //private KeyboardInput m_input = new KeyboardInput();
-
-        //public Shi Player
-        //{
-        //    get { return m_player; }
-        //}
-
-        //public Centipede Centipede
-        //{
-        //    get { return m_centipede; }
-        //}
 
 
-        public void loadContent(ContentManager contentManager, GraphicsDeviceManager m_graphics)
+
+        public void loadContent(ContentManager contentManager)
         {
-            graphics = m_graphics;
-
+            // Setup font
             m_font = contentManager.Load<SpriteFont>("Fonts/game");
 
             // Setup textures
@@ -90,14 +92,12 @@ namespace Assignment3Centipede
             m_NormMush2Texture = contentManager.Load<Texture2D>("Images/MushNorm/NormMush1");
             m_NormMush3Texture = contentManager.Load<Texture2D>("Images/MushNorm/NormMush2");
             m_NormMush4Texture = contentManager.Load<Texture2D>("Images/MushNorm/NormMush3");
-
             m_BulletTexture = contentManager.Load<Texture2D>("Images/Ship/Bullet");
             m_ShipTexture = contentManager.Load<Texture2D>("Images/Ship/Ship");
 
-            //m_NormMushBox = new Rectangle(50, 50, 25, 25);
+            // Setup random for mushroom
             Random xPos = new Random();
             Random yPos = new Random();
-            
             int randX = 0;
             int randY = 0;
 
@@ -132,6 +132,12 @@ namespace Assignment3Centipede
             m_ShipBoxLife1 = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 5, 10, 25, 25);
             m_ShipBoxLife2 = new Rectangle((m_graphics.GraphicsDevice.Viewport.Width / 5) + 30, 10, 25, 25);
             m_ShipBoxLife3 = new Rectangle((m_graphics.GraphicsDevice.Viewport.Width / 5) + 60, 10, 25, 25);
+
+            // Setup flee animation
+            fleeRenderer = new AnimatedSprite(
+                contentManager.Load<Texture2D>("Images/spritesheet-flee"),
+                new int[] { 100, 100, 100, 100 }
+                );
         }
 
         public void initialize()
@@ -164,7 +170,7 @@ namespace Assignment3Centipede
         private void moveShip()
         {
             // Move right
-            if ((Keyboard.GetState().IsKeyDown(helpView.MoveRight)) && (m_ShipBox.X < graphics.GraphicsDevice.Viewport.Width - 30))
+            if ((Keyboard.GetState().IsKeyDown(helpView.MoveRight)) && (m_ShipBox.X < m_graphics.GraphicsDevice.Viewport.Width - 30))
             {
                 //int a = gameModel.MushroomList.Count;
                 int canMoveRight = 0;
@@ -217,7 +223,7 @@ namespace Assignment3Centipede
             }
             
             // Move up
-            if ((Keyboard.GetState().IsKeyDown(helpView.MoveUp)) && (m_ShipBox.Y >= (graphics.GraphicsDevice.Viewport.Height * .7)))
+            if ((Keyboard.GetState().IsKeyDown(helpView.MoveUp)) && (m_ShipBox.Y >= (m_graphics.GraphicsDevice.Viewport.Height * .7)))
             {
                 int canMoveUp = 0;
 
@@ -244,7 +250,7 @@ namespace Assignment3Centipede
             }
 
             // Move down
-            if ((Keyboard.GetState().IsKeyDown(helpView.MoveDown)) && (m_ShipBox.Y != graphics.GraphicsDevice.Viewport.Height - 25))
+            if ((Keyboard.GetState().IsKeyDown(helpView.MoveDown)) && (m_ShipBox.Y != m_graphics.GraphicsDevice.Viewport.Height - 25))
             {
                 int canMoveDown = 0;
 
@@ -276,6 +282,74 @@ namespace Assignment3Centipede
             //m_player.update(gameTime);
             //m_centipede.update(gameTime);
             updateBullets(gameTime);
+
+            // Setup flee
+            // Spawn flee for every 5 mushroom deaths
+            if (mushroomList.Count < 70 && flee == null)
+            {
+                // Get random x flee spawn position
+                Random xPos = new Random();
+                int randX = xPos.Next(30, m_graphics.GraphicsDevice.Viewport.Width - 25);
+
+                while (randX % 30 != 0)
+                {
+                    randX = xPos.Next(50, m_graphics.GraphicsDevice.Viewport.Width - 25);
+                }
+
+                // Spawn flee
+                if (flee == null)
+                {
+                    spawnFlee = false;
+                    flee = new Objects.Flee(
+                        new Vector2(25, 25), // image size
+                        new Vector2(randX, 0), // starting x y pos
+                        200 / 1000.0, // Pixels per second
+                        m_FleeBox,
+                        m_graphics);
+                }
+            }
+
+            // Flee is alive
+            if (flee != null)
+            {
+                // Move flee down screen
+                flee.moveDown(gameTime);
+
+                // Update time
+                mushroomSpawnTimer += gameTime.ElapsedGameTime;
+
+                // Only spawn 5 mushrooms per flee
+                if (fleeMushCount < 6 && flee.yPos > 50)
+                {
+                    // Check if enough time has passed to spawn mushroom
+                    if (mushroomSpawnTimer.TotalSeconds > mushroomSpawnRate)
+                    {
+                        // Increment counter
+                        fleeMushCount++;
+
+                        // Add new mushroom
+                        mushroomClassList.Add(new Mushroom());
+                        mushroomList.Add(new Rectangle((int)flee.xPos, (int)flee.yPos, 25, 25));
+                        
+                        // Reset timer
+                        mushroomSpawnTimer = TimeSpan.FromSeconds(0);
+                    }
+                }
+            }            
+
+            // Kill flee if off screen
+            if (flee != null)
+            {
+                if (flee.yPos > m_graphics.GraphicsDevice.Viewport.Height)
+                {
+                    fleeMushCount = 0;
+                    spawnFlee = true;
+                    flee = null;
+                }
+            }    
+
+            // Update flee animation
+            fleeRenderer.update(gameTime);
         }
 
         private void updateBullets(GameTime gameTime)
@@ -307,11 +381,14 @@ namespace Assignment3Centipede
                             mush.hitMushroom();
 
                             // Update score
-                            score += 4;                            
+                            score += 4;
 
                             // Remove bullet
-                            bulletList.RemoveAt(i);
-                            bulletAlive = false;
+                            if (i < bulletList.Count)
+                            {
+                                bulletList.RemoveAt(i);
+                                bulletAlive = false;
+                            }
                         }
 
                         // Check if mushroom needs to be removed
@@ -325,6 +402,35 @@ namespace Assignment3Centipede
                             // Set copy back to original
                             mushroomClassList[m] = mush;
                             mushroomList[m] = mushList;
+                        }
+                    }
+                  
+                    // If flee is alive
+                    if (flee != null)
+                    {
+                        // Check for bullet collison on flee
+                        if ((bullet.X >= flee.xPos - 25) && (bullet.X <= flee.xPos + 25) && (bullet.Y <= flee.yPos + 20))
+                        {
+                            // Hit flee
+                            flee.hit();
+
+                            // Check if flee has gotten hit twice
+                            if (flee.HitFlee >= 2)
+                            {
+                                // Kill flee
+                                flee = null;
+                                fleeMushCount = 0;
+
+                                // Update score
+                                score += 200;
+                            }
+
+                            // Remove bullet
+                            if (i < bulletList.Count)
+                            {
+                                bulletList.RemoveAt(i);
+                                bulletAlive = false;
+                            }
                         }
                     }
 
@@ -343,7 +449,7 @@ namespace Assignment3Centipede
             }
         }
 
-        public void render(SpriteBatch spriteBatch, GameTime gameTime, GraphicsDeviceManager m_graphics)
+        public void render(SpriteBatch spriteBatch, GameTime gameTime)
         {
             spriteBatch.Begin();
 
@@ -386,7 +492,14 @@ namespace Assignment3Centipede
                 }
             }
 
+            // Draw UI
             drawUi(spriteBatch, m_graphics);
+
+            // Draw flee
+            if (flee != null)
+            {
+                fleeRenderer.draw(spriteBatch, flee);
+            }
 
             spriteBatch.End();
         }
