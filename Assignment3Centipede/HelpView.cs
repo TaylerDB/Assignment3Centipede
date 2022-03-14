@@ -30,6 +30,8 @@ namespace Assignment3Centipede
         private string S_MOVERIGHT = "Right";
         private string S_SHOOT = "Space";
 
+        private bool captureUserKey = false;
+
         private enum ControlsState
         {
             Up,
@@ -109,190 +111,187 @@ namespace Assignment3Centipede
                 return GameStateEnum.MainMenu;
             }
 
-            // This is the technique I'm using to ensure one keypress makes one menu navigation move
-            if (!m_waitForKeyRelease)
+            if (captureUserKey)
             {
-                // Arrow keys to navigate the menu
-                if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_currentSelection != ControlsState.Shoot && !enterPressed)
+                if (Keyboard.GetState().GetPressedKeys().Length > 0)
                 {
-                    m_currentSelection = m_currentSelection + 1;
-                    m_waitForKeyRelease = true;
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_currentSelection != ControlsState.Up && !enterPressed)
-                {
-                    m_currentSelection = m_currentSelection - 1;
-                    m_waitForKeyRelease = true;
-                }
+                    Keys userKey = Keyboard.GetState().GetPressedKeys()[];
+                    captureUserKey = false;
+                    // Do whatever is needed to assign that key to that control
+                    V_MOVEUP = userKey;
 
-                // TODO: Add hitting enter logic
-                KeyboardState state = Keyboard.GetState();
-                System.Text.StringBuilder sb = new StringBuilder();
+                    // Update string
+                    S_MOVEUP = userKey.ToString();
 
-                // Add each key press to keyList
-                foreach (var key in state.GetPressedKeys())
-                {
-                    keyList.Add(key);
-                    sb.Append("Key: ").Append(key).Append(" pressed ");
-                }
-
-                if (sb.Length > 0)
-                    Debug.WriteLine(sb.ToString());
-
-                // If enter is pressed, return the appropriate new state
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Up)
-                {
-                    // Check if we have key presses
-                    if (keyList.Count > 0)
-                    {
-                        // Iterate backwards to find key press before enter
-                        for (int i = keyList.Count - 1; i > 0; i--)
-                        {
-                            if (keyList[i] != Keys.Enter)
-                            {
-                                // Set key press to variable
-                                Debug.WriteLine("This is what I want: ", keyList[i].ToString());
-                                V_MOVEUP = keyList[i];
-
-                                // Update string
-                                S_MOVEUP = keyList[i].ToString();
-
-                                // Clear keyList
-                                //keyList.Clear();
-                                saveSomething();
-                            }
-                        }
-                    }
-
-                    // Clear keyList
-                    keyList.Clear();
-                }
-
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Down)
-                {
-                    // Check if we have key presses
-                    if (keyList.Count > 0)
-                    {
-                        // Iterate backwards to find key press before enter
-                        for (int i = keyList.Count - 1; i > 0; i--)
-                        {
-                            if (keyList[i] != Keys.Enter)
-                            {
-                                // Set key press to variable
-                                Debug.WriteLine("This is what I want: ", keyList[i].ToString());
-                                V_MOVEDOWN = keyList[i];
-
-                                // Update string
-                                S_MOVEDOWN = keyList[i].ToString();
-
-                                // Clear keyList
-                                //keyList.Clear();
-                                saveSomething();
-                            }
-                        }
-                    }
-
-                    // Clear keyList
-                    keyList.Clear();
-                    //saveSomething();
-                }
-
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Left)
-                {
-                    // Check if we have key presses
-                    if (keyList.Count > 0)
-                    {
-                        // Iterate backwards to find key press before enter
-                        for (int i = keyList.Count - 1; i > 0; i--)
-                        {
-                            if (keyList[i] != Keys.Enter)
-                            {
-                                // Set key press to variable
-                                Debug.WriteLine("This is what I want: ", keyList[i].ToString());
-                                V_MOVELEFT = keyList[i];
-
-                                // Update string
-                                S_MOVELEFT = keyList[i].ToString();
-
-                                // Clear keyList
-                                //keyList.Clear();
-                                saveSomething();
-                            }
-                        }
-                    }
-
-                    // Clear keyList
-                    keyList.Clear();
-                    //saveSomething();
-                }
-
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Right)
-                {
-                    // Check if we have key presses
-                    if (keyList.Count > 0)
-                    {
-                        // Iterate backwards to find key press before enter
-                        for (int i = keyList.Count - 1; i > 0; i--)
-                        {
-                            if (keyList[i] != Keys.Enter)
-                            {
-                                // Set key press to variable
-                                Debug.WriteLine("This is what I want: ", keyList[i].ToString());
-                                V_MOVERIGHT = keyList[i];
-
-                                // Update string
-                                S_MOVERIGHT = keyList[i].ToString();
-
-                                // Clear keyList
-                                //keyList.Clear();
-                                saveSomething();
-                            }
-                        }
-                    }
-
-                    // Clear keyList
-                    keyList.Clear();
-                    //saveSomething();
-                }
-
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Shoot)
-                {
-                    // Check if we have key presses
-                    if (keyList.Count > 0)
-                    {
-                        // Iterate backwards to find key press before enter
-                        for (int i = keyList.Count - 1; i > 0; i--)
-                        {
-                            if (keyList[i] != Keys.Enter)
-                            {
-                                // Set key press to variable
-                                Debug.WriteLine("This is what I want: ", keyList[i].ToString());
-                                V_SHOOT = keyList[i];
-
-                                // Update string
-                                S_SHOOT = keyList[i].ToString();
-
-                                // Clear keyList
-                                //keyList.Clear();
-                                saveSomething();
-
-                            }
-                        }
-                    }
-
-                    // Clear keyList
-                    keyList.Clear();
-                    //saveSomething();
                 }
             }
 
-            else if (Keyboard.GetState().IsKeyUp(Keys.Down) && Keyboard.GetState().IsKeyUp(Keys.Up))
+            else
             {
-                m_waitForKeyRelease = false;
+                // This is the technique I'm using to ensure one keypress makes one menu navigation move
+                if (!m_waitForKeyRelease)
+                {
+                    // Arrow keys to navigate the menu
+                    if (Keyboard.GetState().IsKeyDown(Keys.Down) && m_currentSelection != ControlsState.Shoot && !enterPressed)
+                    {
+                        m_currentSelection = m_currentSelection + 1;
+                        m_waitForKeyRelease = true;
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.Up) && m_currentSelection != ControlsState.Up && !enterPressed)
+                    {
+                        m_currentSelection = m_currentSelection - 1;
+                        m_waitForKeyRelease = true;
+                    }
+
+                    // TODO: Add hitting enter logic
+                    KeyboardState state = Keyboard.GetState();
+                    System.Text.StringBuilder sb = new StringBuilder();
+
+                    // Add each key press to keyList
+                    foreach (var key in state.GetPressedKeys())
+                    {
+                        keyList.Add(key);
+                        sb.Append("Key: ").Append(key).Append(" pressed ");
+                    }
+
+                    if (sb.Length > 0)
+                        Debug.WriteLine(sb.ToString());
+
+                    // If enter is pressed, return the appropriate new state
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Up)
+                    {
+                        captureUserKey = true;
+
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Down)
+                    {
+                        // Check if we have key presses
+                        if (keyList.Count > 0)
+                        {
+                            // Iterate backwards to find key press before enter
+                            for (int i = keyList.Count - 1; i > 0; i--)
+                            {
+                                if (keyList[i] != Keys.Enter)
+                                {
+                                    // Set key press to variable
+                                    Debug.WriteLine("This is what I want: ", keyList[i].ToString());
+                                    V_MOVEDOWN = keyList[i];
+
+                                    // Update string
+                                    S_MOVEDOWN = keyList[i].ToString();
+
+                                    // Clear keyList
+                                    //keyList.Clear();
+                                    saveSomething();
+                                }
+                            }
+                        }
+
+                        // Clear keyList
+                        keyList.Clear();
+                        //saveSomething();
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Left)
+                    {
+                        // Check if we have key presses
+                        if (keyList.Count > 0)
+                        {
+                            // Iterate backwards to find key press before enter
+                            for (int i = keyList.Count - 1; i > 0; i--)
+                            {
+                                if (keyList[i] != Keys.Enter)
+                                {
+                                    // Set key press to variable
+                                    Debug.WriteLine("This is what I want: ", keyList[i].ToString());
+                                    V_MOVELEFT = keyList[i];
+
+                                    // Update string
+                                    S_MOVELEFT = keyList[i].ToString();
+
+                                    // Clear keyList
+                                    //keyList.Clear();
+                                    saveSomething();
+                                }
+                            }
+                        }
+
+                        // Clear keyList
+                        keyList.Clear();
+                        //saveSomething();
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Right)
+                    {
+                        // Check if we have key presses
+                        if (keyList.Count > 0)
+                        {
+                            // Iterate backwards to find key press before enter
+                            for (int i = keyList.Count - 1; i > 0; i--)
+                            {
+                                if (keyList[i] != Keys.Enter)
+                                {
+                                    // Set key press to variable
+                                    Debug.WriteLine("This is what I want: ", keyList[i].ToString());
+                                    V_MOVERIGHT = keyList[i];
+
+                                    // Update string
+                                    S_MOVERIGHT = keyList[i].ToString();
+
+                                    // Clear keyList
+                                    //keyList.Clear();
+                                    saveSomething();
+                                }
+                            }
+                        }
+
+                        // Clear keyList
+                        keyList.Clear();
+                        //saveSomething();
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter) && m_currentSelection == ControlsState.Shoot)
+                    {
+                        // Check if we have key presses
+                        if (keyList.Count > 0)
+                        {
+                            // Iterate backwards to find key press before enter
+                            for (int i = keyList.Count - 1; i > 0; i--)
+                            {
+                                if (keyList[i] != Keys.Enter)
+                                {
+                                    // Set key press to variable
+                                    Debug.WriteLine("This is what I want: ", keyList[i].ToString());
+                                    V_SHOOT = keyList[i];
+
+                                    // Update string
+                                    S_SHOOT = keyList[i].ToString();
+
+                                    // Clear keyList
+                                    //keyList.Clear();
+                                    saveSomething();
+
+                                }
+                            }
+                        }
+
+                        // Clear keyList
+                        keyList.Clear();
+                        //saveSomething();
+                    }
+                }
+
+                else if (Keyboard.GetState().IsKeyUp(Keys.Down) && Keyboard.GetState().IsKeyUp(Keys.Up))
+                {
+                    m_waitForKeyRelease = false;
+                }
+
+                //saveSomething();
             }
-
-            //saveSomething();
-
+            
             return GameStateEnum.Help;
+            
         }
 
         /// <summary>
