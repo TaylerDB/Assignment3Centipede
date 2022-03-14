@@ -47,9 +47,10 @@ namespace Assignment3Centipede
 
         HelpView helpView = new HelpView();
         Ship ship = new Ship();
+        bool shipAlive = true;
 
-        private Objects.Flee flee;
-        private AnimatedSprite fleeRenderer;
+        private Objects.Flea flea;
+        private AnimatedSprite fleaRenderer;
 
         bool spawnFlee = true;
         int fleeMushCount = 0;
@@ -134,7 +135,7 @@ namespace Assignment3Centipede
             m_ShipBoxLife3 = new Rectangle((m_graphics.GraphicsDevice.Viewport.Width / 5) + 60, 10, 25, 25);
 
             // Setup flee animation
-            fleeRenderer = new AnimatedSprite(
+            fleaRenderer = new AnimatedSprite(
                 contentManager.Load<Texture2D>("Images/spritesheet-flee"),
                 new int[] { 100, 100, 100, 100 }
                 );
@@ -149,20 +150,24 @@ namespace Assignment3Centipede
 
         public void processInput(GameTime gameTime)
         {
-
-            moveShip();
-
-            // Shoot bullets
-            if (Keyboard.GetState().IsKeyDown(helpView.Shoot))
+            // 
+            if (shipAlive == true)
             {
-                // Check game time for fire rate
-                if (fireRateTimer.TotalSeconds > fireRate)
-                {
-                    // Add bullet to list
-                    bulletList.Add(new Rectangle(m_ShipBox.X + 5, m_ShipBox.Y - 25, 15, 30));
+                // Check for ship movement
+                moveShip();
 
-                    // Reset fire rate timer to zero
-                    fireRateTimer = TimeSpan.FromSeconds(0);
+                // Shoot bullets
+                if (Keyboard.GetState().IsKeyDown(helpView.Shoot))
+                {
+                    // Check game time for fire rate
+                    if (fireRateTimer.TotalSeconds > fireRate)
+                    {
+                        // Add bullet to list
+                        bulletList.Add(new Rectangle(m_ShipBox.X + 5, m_ShipBox.Y - 25, 15, 30));
+
+                        // Reset fire rate timer to zero
+                        fireRateTimer = TimeSpan.FromSeconds(0);
+                    }
                 }
             }
         }
@@ -284,72 +289,11 @@ namespace Assignment3Centipede
             updateBullets(gameTime);
 
             // Setup flee
-            // Spawn flee for every 5 mushroom deaths
-            if (mushroomList.Count < 70 && flee == null)
-            {
-                // Get random x flee spawn position
-                Random xPos = new Random();
-                int randX = xPos.Next(30, m_graphics.GraphicsDevice.Viewport.Width - 25);
+            updateFlea(gameTime);
 
-                while (randX % 30 != 0)
-                {
-                    randX = xPos.Next(50, m_graphics.GraphicsDevice.Viewport.Width - 25);
-                }
-
-                // Spawn flee
-                if (flee == null)
-                {
-                    spawnFlee = false;
-                    flee = new Objects.Flee(
-                        new Vector2(25, 25), // image size
-                        new Vector2(randX, 0), // starting x y pos
-                        200 / 1000.0, // Pixels per second
-                        m_FleeBox,
-                        m_graphics);
-                }
-            }
-
-            // Flee is alive
-            if (flee != null)
-            {
-                // Move flee down screen
-                flee.moveDown(gameTime);
-
-                // Update time
-                mushroomSpawnTimer += gameTime.ElapsedGameTime;
-
-                // Only spawn 5 mushrooms per flee
-                if (fleeMushCount < 6 && flee.yPos > 50)
-                {
-                    // Check if enough time has passed to spawn mushroom
-                    if (mushroomSpawnTimer.TotalSeconds > mushroomSpawnRate)
-                    {
-                        // Increment counter
-                        fleeMushCount++;
-
-                        // Add new mushroom
-                        mushroomClassList.Add(new Mushroom());
-                        mushroomList.Add(new Rectangle((int)flee.xPos, (int)flee.yPos, 25, 25));
-                        
-                        // Reset timer
-                        mushroomSpawnTimer = TimeSpan.FromSeconds(0);
-                    }
-                }
-            }            
-
-            // Kill flee if off screen
-            if (flee != null)
-            {
-                if (flee.yPos > m_graphics.GraphicsDevice.Viewport.Height)
-                {
-                    fleeMushCount = 0;
-                    spawnFlee = true;
-                    flee = null;
-                }
-            }    
 
             // Update flee animation
-            fleeRenderer.update(gameTime);
+            fleaRenderer.update(gameTime);
         }
 
         private void updateBullets(GameTime gameTime)
@@ -406,19 +350,19 @@ namespace Assignment3Centipede
                     }
                   
                     // If flee is alive
-                    if (flee != null)
+                    if (flea != null)
                     {
                         // Check for bullet collison on flee
-                        if ((bullet.X >= flee.xPos - 25) && (bullet.X <= flee.xPos + 25) && (bullet.Y <= flee.yPos + 20))
+                        if ((bullet.X >= flea.xPos - 25) && (bullet.X <= flea.xPos + 25) && (bullet.Y <= flea.yPos + 20))
                         {
                             // Hit flee
-                            flee.hit();
+                            flea.hit();
 
                             // Check if flee has gotten hit twice
-                            if (flee.HitFlee >= 2)
+                            if (flea.HitFlee >= 2)
                             {
                                 // Kill flee
-                                flee = null;
+                                flea = null;
                                 fleeMushCount = 0;
 
                                 // Update score
@@ -447,6 +391,105 @@ namespace Assignment3Centipede
                     }
                 }
             }
+        }
+
+        private void updateFlea(GameTime gameTime)
+        {
+            // Spawn flee for every 5 mushroom deaths
+            if (mushroomList.Count < 70 && flea == null)
+            {
+                // Get random x flee spawn position
+                Random xPos = new Random();
+                int randX = xPos.Next(30, m_graphics.GraphicsDevice.Viewport.Width - 25);
+
+                while (randX % 30 != 0)
+                {
+                    randX = xPos.Next(50, m_graphics.GraphicsDevice.Viewport.Width - 25);
+                }
+
+                // Spawn flee
+                if (flea == null)
+                {
+                    spawnFlee = false;
+                    flea = new Objects.Flea(
+                        new Vector2(25, 25), // image size
+                        new Vector2(randX, 0), // starting x y pos
+                        200 / 1000.0, // Pixels per second
+                        m_FleeBox,
+                        m_graphics);
+                }
+            }
+
+            // Flee is alive
+            if (flea != null)
+            {
+                // Move flee down screen
+                flea.moveDown(gameTime);
+
+                // Update time
+                mushroomSpawnTimer += gameTime.ElapsedGameTime;
+
+                // Only spawn 5 mushrooms per flee
+                if (fleeMushCount < 6 && flea.yPos > 50)
+                {
+                    // Check if enough time has passed to spawn mushroom
+                    if (mushroomSpawnTimer.TotalSeconds > mushroomSpawnRate)
+                    {
+                        // Increment counter
+                        fleeMushCount++;
+
+                        // Add new mushroom
+                        mushroomClassList.Add(new Mushroom());
+                        mushroomList.Add(new Rectangle((int)flea.xPos, (int)flea.yPos, 25, 25));
+
+                        // Reset timer
+                        mushroomSpawnTimer = TimeSpan.FromSeconds(0);
+                    }
+                }
+
+                // Check collison on ship
+                if ((m_ShipBox.X >= flea.xPos - 30) && (m_ShipBox.X <= flea.xPos + 30) && (m_ShipBox.Y <= flea.yPos + 20) && shipAlive)
+                {
+                    // Kill ship
+                    killShip();
+                }
+
+            }
+
+            // Kill flee if off screen
+            if (flea != null)
+            {
+                if (flea.yPos > m_graphics.GraphicsDevice.Viewport.Height)
+                {
+                    fleeMushCount = 0;
+                    spawnFlee = true;
+                    flea = null;
+                }
+            }
+        }
+
+        private void killShip()
+        {
+            // Check if player has remaining lives
+            if (ship.Lives > 0)
+            {
+                // Take off life
+                ship.takeLives();
+
+                // Move ship rectangle back to starting position
+                m_ShipBox.X = m_graphics.GraphicsDevice.Viewport.Width / 2; // = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 2, m_graphics.GraphicsDevice.Viewport.Height - 25, 25, 25);
+                m_ShipBox.Y = m_graphics.GraphicsDevice.Viewport.Height - 25;
+
+                // Update ship class
+                ship.xPos = m_ShipBox.X;
+                ship.yPos = m_ShipBox.Y;
+            }
+
+            // Game over
+            else
+            {
+                shipAlive = false;
+            }             
         }
 
         public void render(SpriteBatch spriteBatch, GameTime gameTime)
@@ -480,8 +523,13 @@ namespace Assignment3Centipede
 
             }
 
-            // Draw ship
-            spriteBatch.Draw(m_ShipTexture, m_ShipBox, Color.White);
+            // Check if ship is alive 
+            if (shipAlive == true)
+            {
+                // Draw ship
+                spriteBatch.Draw(m_ShipTexture, m_ShipBox, Color.White);
+            }
+
 
             // Draw bullet
             if (bulletList.Count > 0)
@@ -496,9 +544,9 @@ namespace Assignment3Centipede
             drawUi(spriteBatch, m_graphics);
 
             // Draw flee
-            if (flee != null)
+            if (flea != null)
             {
-                fleeRenderer.draw(spriteBatch, flee);
+                fleaRenderer.draw(spriteBatch, flea);
             }
 
             spriteBatch.End();

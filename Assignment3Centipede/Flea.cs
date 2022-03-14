@@ -2,7 +2,7 @@
 
 namespace Assignment3Centipede.Objects
 {
-    class Flee : AnimatedSprite
+    class Flea : AnimatedSprite
     {
         private readonly double m_moveRate;
         Rectangle m_fleeRec;
@@ -11,7 +11,7 @@ namespace Assignment3Centipede.Objects
         int hitFlee = 0;
 
 
-        public Flee(Vector2 size, Vector2 center, double moveRate, Rectangle fleeRec, GraphicsDeviceManager m_graphics) : base(size, center)
+        public Flea(Vector2 size, Vector2 center, double moveRate, Rectangle fleeRec, GraphicsDeviceManager m_graphics) : base(size, center)
         {
             m_moveRate = moveRate;
             m_fleeRec = fleeRec;
