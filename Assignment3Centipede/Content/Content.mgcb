@@ -34,6 +34,30 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/menu-select.spritefont
 
+#begin Images/Centipede/centipede_part.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Images/Centipede/centipede_part.png
+
+#begin Images/Centipede/centipede_side.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Images/Centipede/centipede_side.png
+
 #begin Images/MushNorm/NormMush0.png
 /importer:TextureImporter
 /processor:TextureProcessor
