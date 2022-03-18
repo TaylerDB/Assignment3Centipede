@@ -115,7 +115,7 @@ namespace Assignment3Centipede
             {
                 if (Keyboard.GetState().GetPressedKeys().Length > 0)
                 {
-                    Keys userKey = Keyboard.GetState().GetPressedKeys()[];
+                    Keys userKey = Keyboard.GetState().GetPressedKeys()[0];
                     captureUserKey = false;
                     // Do whatever is needed to assign that key to that control
                     V_MOVEUP = userKey;
