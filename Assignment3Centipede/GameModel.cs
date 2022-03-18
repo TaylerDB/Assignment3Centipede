@@ -27,13 +27,14 @@ namespace Assignment3Centipede
         int highScore = 0;
 
         // Rectangles
-        //private Rectangle m_MushroomBox;
         private Rectangle m_ShipBox;
         private Rectangle m_ShipBoxLife1;
         private Rectangle m_ShipBoxLife2;
         private Rectangle m_ShipBoxLife3;
 
         private Rectangle m_FleeBox;
+
+        private Rectangle m_CentipedeBox;
 
         // Textures
         private Texture2D m_NormMush1Texture;
@@ -44,16 +45,28 @@ namespace Assignment3Centipede
         private Texture2D m_BulletTexture;
         private Texture2D m_ShipTexture;
 
+        private Texture2D m_CentipedeTexture;
+
 
         HelpView helpView = new HelpView();
         Ship ship = new Ship();
         bool shipAlive = true;
 
         private Objects.Flea flea;
+        private Objects.Centipede centipede;
+
         private AnimatedSprite fleaRenderer;
+        private AnimatedSprite centipedeRenderer;
 
         bool spawnFlee = true;
         int fleeMushCount = 0;
+
+        double centYPosL = 0;
+        double centYPosR = 0;
+        bool moveCentUp = false;
+        bool moveCentDown = false;
+        bool moveCentLeft = true;
+        bool moveCentRight = false;
 
         TimeSpan fireRateTimer = TimeSpan.FromSeconds(0);
         TimeSpan mushroomSpawnTimer = TimeSpan.FromSeconds(0);
@@ -95,6 +108,8 @@ namespace Assignment3Centipede
             m_NormMush4Texture = contentManager.Load<Texture2D>("Images/MushNorm/NormMush3");
             m_BulletTexture = contentManager.Load<Texture2D>("Images/Ship/Bullet");
             m_ShipTexture = contentManager.Load<Texture2D>("Images/Ship/Ship");
+
+            m_CentipedeTexture = contentManager.Load<Texture2D>("Images/Centipede/centipede_part");
 
             // Setup random for mushroom
             Random xPos = new Random();
@@ -139,6 +154,15 @@ namespace Assignment3Centipede
                 contentManager.Load<Texture2D>("Images/spritesheet-flee"),
                 new int[] { 100, 100, 100, 100 }
                 );
+
+            // Setup flee animation
+            centipedeRenderer = new AnimatedSprite(
+                contentManager.Load<Texture2D>("Images/Centipede/centipede_part"),
+                new int[] { 100 }
+                );
+
+            // Set up cenitpede
+            //m_CentipedeBox = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 6, 50, 25, 25);
         }
 
         public void initialize()
@@ -291,6 +315,93 @@ namespace Assignment3Centipede
             // Setup flee
             updateFlea(gameTime);
 
+            // Setup centipdede
+
+            // If at wall go down or mushroom
+            for (int m = 0; m < mushroomList.Count; m++)
+            {
+                // Get a copy
+                var mushList = mushroomList[m];
+
+                if (centipede == null)
+                {
+                    centipede = new Objects.Centipede(
+                        new Vector2(25, 25), // image size
+                        new Vector2(m_graphics.GraphicsDevice.Viewport.Width - 200, 50), // starting x y pos
+                        8 / 1000.0, // Pixels per second
+                        m_CentipedeBox,
+                        m_graphics);
+                }
+
+                if (centipede != null)
+                {
+                    if (centipede.xPos < 20 && centipede.yPos == 50 )
+                    {
+                        moveCentDown = true;
+                    }
+
+                    if ((centipede.xPos > 15) && moveCentLeft) //|| (centipede.xPos > mushList.X + 25))
+                    {
+                        // Move centipede left
+                        centipede.moveLeft(gameTime);
+                        centYPosL = centipede.yPos;
+                    }
+
+                    // Move down
+                    else if (centipede.xPos < 20 && centipede.yPos < centYPosL + 30)// && moveCentDown)
+                    {
+                        moveCentLeft = false;
+                        // Move Centipede down
+                        if (moveCentDown)
+                        {
+                            centipede.moveDown(gameTime);
+                        }
+
+                        if (moveCentUp)
+                        {
+                            centipede.moveUp(gameTime);
+                        }
+                    }
+
+                    // Move right
+                    else if (centipede.xPos < m_graphics.GraphicsDevice.Viewport.Width - 20)
+                    {
+                        // Move Centipede right
+                        centipede.moveRight(gameTime);
+                        centYPosR = centipede.yPos;
+                    }
+
+                    //// Move down on right side
+                    else if (centipede.xPos > m_graphics.GraphicsDevice.Viewport.Width - 20 && centipede.yPos < centYPosR + 30)// && moveCentDown)
+                    {
+                        moveCentLeft = false;
+                        // Move Centipede down
+                        if (moveCentDown)
+                        {
+                            centipede.moveDown(gameTime);
+                        }
+                        
+                        if (moveCentUp)
+                        {
+                            centipede.moveUp(gameTime);
+                        }
+                    }
+                    else
+                        moveCentLeft = true;
+
+                    if (centipede.xPos < 20 && centipede.yPos > m_graphics.GraphicsDevice.Viewport.Height - 60)
+                    {
+                        // Go up
+                        moveCentUp = true;
+                        moveCentDown = false;
+                    }
+
+
+
+
+                }
+                mushroomList[m] = mushList;
+            }
 
             // Update flee animation
             fleaRenderer.update(gameTime);
@@ -547,6 +658,12 @@ namespace Assignment3Centipede
             if (flea != null)
             {
                 fleaRenderer.draw(spriteBatch, flea);
+            }
+
+            // Draw flee
+            if (centipede != null)
+            {
+                centipedeRenderer.draw(spriteBatch, centipede);
             }
 
             spriteBatch.End();
