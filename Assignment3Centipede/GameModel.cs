@@ -63,6 +63,9 @@ namespace Assignment3Centipede
 
         double centYPosL = 0;
         double centYPosR = 0;
+
+        bool centStart = true;
+        bool hitLeftMush = false;
         bool moveCentUp = false;
         bool moveCentDown = false;
         bool moveCentLeft = true;
@@ -123,22 +126,26 @@ namespace Assignment3Centipede
                 // Add to mushroom class
                 mushroomClassList.Add(new Mushroom());
 
-                // Make mushrooms in a grid size
-                randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
-                while (randX % 30 != 0)
-                {
-                    randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
-                }
+                //    // Make mushrooms in a grid size
+                //    randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
+                //    while (randX % 30 != 0)
+                //    {
+                //        randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
+                //    }
 
-                randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
-                while (randY % 30 != 0)
-                {
-                    randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
-                }
+                //    randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
+                //    while (randY % 30 != 0)
+                //    {
+                //        randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
+                //    }
 
-                // Add to mushroom list
-                mushroomList.Add(new Rectangle(randX, randY, 25, 25));
+                //    // Add to mushroom list
+                //    mushroomList.Add(new Rectangle(randX, randY, 25, 25));
+
+                mushroomList.Add(new Rectangle(200, 60, 25, 25));
+
             }
+
 
             // Set up player
             m_ShipBox = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 2, m_graphics.GraphicsDevice.Viewport.Height - 25, 25, 25);
@@ -316,6 +323,15 @@ namespace Assignment3Centipede
             updateFlea(gameTime);
 
             // Setup centipdede
+            if (centipede == null)
+            {
+                centipede = new Objects.Centipede(
+                    new Vector2(25, 25), // image size
+                    new Vector2(m_graphics.GraphicsDevice.Viewport.Width - 200, 50), // starting x y pos
+                    5 / 1000.0, // Pixels per second
+                    m_CentipedeBox,
+                    m_graphics);
+            }
 
             // If at wall go down or mushroom
             for (int m = 0; m < mushroomList.Count; m++)
@@ -323,84 +339,100 @@ namespace Assignment3Centipede
                 // Get a copy
                 var mushList = mushroomList[m];
 
-                if (centipede == null)
-                {
-                    centipede = new Objects.Centipede(
-                        new Vector2(25, 25), // image size
-                        new Vector2(m_graphics.GraphicsDevice.Viewport.Width - 200, 50), // starting x y pos
-                        8 / 1000.0, // Pixels per second
-                        m_CentipedeBox,
-                        m_graphics);
-                }
-
                 if (centipede != null)
                 {
-                    if (centipede.xPos < 20 && centipede.yPos == 50 )
+                    if (centStart)
                     {
-                        moveCentDown = true;
+                        centStart = false;
+                        //moveCentDown = true;
+                        moveCentLeft = true;
                     }
 
-                    if ((centipede.xPos > 15) && moveCentLeft) //|| (centipede.xPos > mushList.X + 25))
+                    if (moveCentLeft)
                     {
                         // Move centipede left
                         centipede.moveLeft(gameTime);
                         centYPosL = centipede.yPos;
                     }
 
-                    // Move down
-                    else if (centipede.xPos < 20 && centipede.yPos < centYPosL + 30)// && moveCentDown)
+                    if (centipede.xPos <= 15)
                     {
                         moveCentLeft = false;
+                        moveCentDown = true;
+                    }
+
+                    // Move down
+                    if (moveCentDown && centipede.yPos <= centYPosL + 30)// && moveCentDown)
+                    {
+                        moveCentLeft = false;
+                        moveCentRight = false;
                         // Move Centipede down
-                        if (moveCentDown)
-                        {
+                        //if (moveCentDown)
+                        //{
                             centipede.moveDown(gameTime);
-                        }
+                        //}
 
                         if (moveCentUp)
                         {
                             centipede.moveUp(gameTime);
                         }
+                        //moveCentRight = true;
+                    }
+                    
+                    if (/*centipede.xPos < 15 &&*/ centipede.yPos >= centYPosL + 30)
+                    {
+                        moveCentDown = false;
+      
+                            
+                        if (hitLeftMush)
+                            moveCentLeft = true;
+                        else
+                            moveCentRight = true;
                     }
 
-                    // Move right
-                    else if (centipede.xPos < m_graphics.GraphicsDevice.Viewport.Width - 20)
-                    {
+                    //// Move right
+                    if ((moveCentRight /*&& !moveCentLeft*/))                    {
                         // Move Centipede right
                         centipede.moveRight(gameTime);
-                        centYPosR = centipede.yPos;
+                        //centYPosL = centipede.yPos;
                     }
 
-                    //// Move down on right side
-                    else if (centipede.xPos > m_graphics.GraphicsDevice.Viewport.Width - 20 && centipede.yPos < centYPosR + 30)// && moveCentDown)
+                    // Check mushroom from left side
+                    if ((centipede.xPos > mushList.X - 25) && (centipede.yPos <= mushList.Y + 21) &&
+                        (centipede.yPos > mushList.Y - 10))
                     {
-                        moveCentLeft = false;
-                        // Move Centipede down
-                        if (moveCentDown)
-                        {
-                            centipede.moveDown(gameTime);
-                        }
-                        
-                        if (moveCentUp)
-                        {
-                            centipede.moveUp(gameTime);
-                        }
-                    }
-                    else
-                        moveCentLeft = true;
+                        hitLeftMush = true;
+                        centYPosL = centipede.yPos;
+                        moveCentDown = true;
 
-                    if (centipede.xPos < 20 && centipede.yPos > m_graphics.GraphicsDevice.Viewport.Height - 60)
-                    {
-                        // Go up
-                        moveCentUp = true;
-                        moveCentDown = false;
                     }
 
+                    ////// Move down on right side
+                    //else if (centipede.xPos > m_graphics.GraphicsDevice.Viewport.Width - 20 && centipede.yPos < centYPosR + 30)// && moveCentDown)
+                    //{
+                    //    moveCentLeft = false;
+                    //    // Move Centipede down
+                    //    if (moveCentDown)
+                    //    {
+                    //        centipede.moveDown(gameTime);
+                    //    }
 
+                    //    if (moveCentUp)
+                    //    {
+                    //        centipede.moveUp(gameTime);
+                    //    }
+                    //}
+                    //else
+                    //    moveCentLeft = true;
 
-
+                    //if (centipede.xPos < 15 && centipede.yPos > m_graphics.GraphicsDevice.Viewport.Height - 20)
+                    //{
+                    //    // Go up
+                    //    moveCentUp = true;
+                    //    moveCentDown = false;
+                    //}
                 }
-                mushroomList[m] = mushList;
+        mushroomList[m] = mushList;
             }
 
             // Update flee animation

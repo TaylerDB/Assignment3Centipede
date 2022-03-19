@@ -38,6 +38,7 @@ namespace Assignment3Centipede.Objects
         public void moveRight(GameTime gameTime)
         {
             m_center.X += (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
+            //m_center.X += 2; // (int)m_moveRate;
         }
 
         public void moveLeft(GameTime gameTime)
