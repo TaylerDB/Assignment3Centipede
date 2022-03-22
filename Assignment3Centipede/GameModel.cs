@@ -440,14 +440,24 @@ namespace Assignment3Centipede
                     for (int c = 0; c < centipedeList.Count; c++)
                     {
                         var cent = (Objects.Centipede)centipedeList.ElementAt(c);
-                        if ((bullet.X >= cent.xPos - 25) && (bullet.X <= cent.xPos + 25) && (bullet.Y <= cent.yPos + 20))
+                        if ((bullet.X > cent.xPos - 25) && (bullet.X < cent.xPos + 25) && (bullet.Y <= cent.yPos + 20) && (bullet.Y > cent.yPos - 20))
                         {
                             // Remove centipede piece
                             centipedeList.RemoveAt(i);
+
+                            // Update score
+                            score += 300;
+
+                            // Remove bullet
+                            if (i < bulletList.Count)
+                            {
+                                bulletList.RemoveAt(i);
+                                bulletAlive = false;
+                            }
                         }
                         else
                         {
-                            centipedeList[i] = cent;
+                            centipedeList[c] = cent;
                         }
                     }
 
