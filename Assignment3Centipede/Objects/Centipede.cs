@@ -11,10 +11,10 @@ namespace Assignment3Centipede.Objects
 
         int hitCentipede = 0;
 
-        public Centipede(Vector2 size, Vector2 center, double moveRate, Rectangle fleeRec, GraphicsDeviceManager m_graphics) : base(size, center)
+        public Centipede(Vector2 size, Vector2 center, double moveRate, Rectangle centipedeRec, GraphicsDeviceManager m_graphics) : base(size, center)
         {
             m_moveRate = moveRate;
-            m_CentipedeRec = fleeRec;
+            m_CentipedeRec = centipedeRec;
         }
 
         public double xPos
