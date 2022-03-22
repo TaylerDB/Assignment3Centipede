@@ -96,6 +96,7 @@ namespace Assignment3Centipede
 
         List<object> mushroomClassList = new List<object>();
         List<object> centipedeList = new List<object>();
+        List<Rectangle> centBoxList = new List<Rectangle>();
         List<Rectangle> bulletList = new List<Rectangle>();
 
 
@@ -172,20 +173,23 @@ namespace Assignment3Centipede
             // Set up cenitpede
             //m_CentipedeBox = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 6, 50, 25, 25);
             
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
-                //Rectangle m_CentipedeBox = new Rectangle();
+                centBoxList.Add(new Rectangle());
+            }
 
-                //Objects.Centipede centipede;
-                //centipede = new Objects.Centipede(
-                centipedeList.Add(new Objects.Centipede(
+            for (int i = 0; i < 3; i++)
+            {
+                Objects.Centipede centipede;
+                centipede = new Objects.Centipede(
+                //centipedeList.Add(new Objects.Centipede(
                     new Vector2(25, 25), // image size
                     new Vector2((m_graphics.GraphicsDevice.Viewport.Width / 2) - (i * 30), 50), // starting x y pos
                     5 / 1000.0, // Pixels per second
                     new Rectangle(),
-                    m_graphics));
+                    m_graphics);
 
-                //centipedeList.Add(centipede);
+                centipedeList.Add(centipede);
             }
 
         }
@@ -432,11 +436,19 @@ namespace Assignment3Centipede
                         }
                     }
 
-                    // Check collison on centipede
+                    //// Check collison on centipede
                     for (int c = 0; c < centipedeList.Count; c++)
                     {
                         var cent = (Objects.Centipede)centipedeList.ElementAt(c);
-
+                        if ((bullet.X >= cent.xPos - 25) && (bullet.X <= cent.xPos + 25) && (bullet.Y <= cent.yPos + 20))
+                        {
+                            // Remove centipede piece
+                            centipedeList.RemoveAt(i);
+                        }
+                        else
+                        {
+                            centipedeList[i] = cent;
+                        }
                     }
 
                     // Check if bullet is still alive
