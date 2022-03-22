@@ -66,6 +66,7 @@ namespace Assignment3Centipede
 
         bool centStart = true;
         bool hitLeftMush = false;
+        bool hitRightMush = false;
         bool moveCentUp = false;
         bool moveCentDown = false;
         bool moveCentLeft = true;
@@ -126,23 +127,23 @@ namespace Assignment3Centipede
                 // Add to mushroom class
                 mushroomClassList.Add(new Mushroom());
 
-                //    // Make mushrooms in a grid size
+                // // Make mushrooms in a grid size
+                //randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
+                //while (randX % 30 != 0)
+                //{
                 //    randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
-                //    while (randX % 30 != 0)
-                //    {
-                //        randX = xPos.Next(m_graphics.GraphicsDevice.Viewport.Width - 25);
-                //    }
+                //}
 
+                //randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
+                //while (randY % 30 != 0)
+                //{
                 //    randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
-                //    while (randY % 30 != 0)
-                //    {
-                //        randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
-                //    }
+                //}
 
-                //    // Add to mushroom list
-                //    mushroomList.Add(new Rectangle(randX, randY, 25, 25));
+                // Add to mushroom list
+                //mushroomList.Add(new Rectangle(randX, randY, 25, 25));
 
-                mushroomList.Add(new Rectangle(200, 60, 25, 25));
+                mushroomList.Add(new Rectangle(200, 30, 25, 25));
 
             }
 
@@ -369,7 +370,7 @@ namespace Assignment3Centipede
                         // Move Centipede down
                         //if (moveCentDown)
                         //{
-                            centipede.moveDown(gameTime);
+                        centipede.moveDown(gameTime);
                         //}
 
                         if (moveCentUp)
@@ -379,32 +380,63 @@ namespace Assignment3Centipede
                         //moveCentRight = true;
                     }
                     
-                    if (/*centipede.xPos < 15 &&*/ centipede.yPos >= centYPosL + 30)
+                    if (/*centipede.xPos < 15 &&*/ (centipede.yPos >= centYPosL + 30) && !moveCentLeft && !moveCentRight)
                     {
                         moveCentDown = false;
-      
-                            
+
                         if (hitLeftMush)
+                        {
                             moveCentLeft = true;
+                            hitLeftMush = false;
+                        }
+                        else if (hitRightMush)
+                        {
+                            moveCentRight = true;
+                            hitRightMush = false;
+                        }
+                        else if (moveCentRight)
+                        {
+                            moveCentRight = false;
+                            moveCentLeft = true;
+                        }
+                        else if (moveCentLeft)
+                        {
+                            moveCentLeft = false;
+                            moveCentRight = true;
+                        }
                         else
                             moveCentRight = true;
                     }
 
                     //// Move right
-                    if ((moveCentRight /*&& !moveCentLeft*/))                    {
+                    if ((moveCentRight /*&& !moveCentLeft*/))                    
+                    {
                         // Move Centipede right
                         centipede.moveRight(gameTime);
                         //centYPosL = centipede.yPos;
                     }
 
+
+
                     // Check mushroom from left side
-                    if ((centipede.xPos > mushList.X - 25) && (centipede.yPos <= mushList.Y + 21) &&
-                        (centipede.yPos > mushList.Y - 10))
+                    if (((centipede.xPos > mushList.X - 25) && (centipede.xPos < mushList.X + 25)) &&
+                        (centipede.yPos <= mushList.Y + 21) && (centipede.yPos > mushList.Y - 10))
                     {
+                        moveCentRight = false;
                         hitLeftMush = true;
                         centYPosL = centipede.yPos;
                         moveCentDown = true;
 
+                    }
+
+                    // Check mushroom from Right side
+                    if (((centipede.xPos < mushList.X + 25) && (centipede.xPos > mushList.X - 25)) &&
+                        (centipede.yPos <= mushList.Y + 21) && (centipede.yPos > mushList.Y - 10))
+                    {
+                        moveCentLeft = false;
+                        hitRightMush = true;
+                        centYPosL = centipede.yPos;
+                        moveCentDown = true;
                     }
 
                     ////// Move down on right side
@@ -432,7 +464,7 @@ namespace Assignment3Centipede
                     //    moveCentDown = false;
                     //}
                 }
-        mushroomList[m] = mushList;
+                mushroomList[m] = mushList;
             }
 
             // Update flee animation
