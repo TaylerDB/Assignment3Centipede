@@ -2,18 +2,18 @@
 
 namespace Assignment3Centipede.Objects
 {
-    class Flea : AnimatedSprite
+    class Scorpion : AnimatedSprite
     {
         private readonly double m_moveRate;
-        Rectangle m_fleaRec;
+        Rectangle m_scorpionRec;
         GraphicsDeviceManager m_graphics;
-        
-        int hitFlea = 0;
 
-        public Flea(Vector2 size, Vector2 center, double moveRate, Rectangle fleeRec, GraphicsDeviceManager m_graphics) : base(size, center)
+        int hitScorpion = 0;
+
+        public Scorpion(Vector2 size, Vector2 center, double moveRate, Rectangle scorpionRec, GraphicsDeviceManager m_graphics) : base(size, center)
         {
             m_moveRate = moveRate;
-            m_fleaRec = fleeRec;
+            m_scorpionRec = scorpionRec;
             m_graphics = m_graphics;
         }
 
@@ -31,8 +31,8 @@ namespace Assignment3Centipede.Objects
 
         public int HitFlee
         {
-            get { return hitFlea; }
-            set { hitFlea = value; }
+            get { return hitScorpion; }
+            set { hitScorpion = value; }
         }
 
         public void moveDown(GameTime gameTime)
@@ -42,7 +42,7 @@ namespace Assignment3Centipede.Objects
 
         public void hit()
         {
-            hitFlea++;
+            hitScorpion++;
         }
     }
 }

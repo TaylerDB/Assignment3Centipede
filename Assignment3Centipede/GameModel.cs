@@ -22,7 +22,10 @@ namespace Assignment3Centipede
 
 
         private SpriteFont m_font;
-        private const string MESSAGE = "Isn't this game fun!";
+        private SpriteFont m_bigFont;
+        private const string Win_MESSAGE = "YOU WIN!";
+        private const string LOST_MESSAGE = "YOU LOST!";
+
         int score = 0;
         int highScore = 0;
 
@@ -33,6 +36,8 @@ namespace Assignment3Centipede
         private Rectangle m_ShipBoxLife3;
 
         private Rectangle m_FleeBox;
+        private Rectangle m_SpiderBox;
+        private Rectangle m_ScorpionBox;
 
         //private Rectangle m_CentipedeBox;
 
@@ -53,10 +58,17 @@ namespace Assignment3Centipede
         bool shipAlive = true;
 
         private Objects.Flea flea;
+        private Objects.Spider spider;
+        private Objects.Scorpion scorpion;
         //private Objects.Centipede centipede;
 
         private AnimatedSprite fleaRenderer;
         private AnimatedSprite centipedeRenderer;
+        private AnimatedSprite spiderRenderer;
+        private AnimatedSprite scorpionRenderer;
+
+        bool gameWon = false;
+        bool gameLost = false;
 
         bool spawnFlee = true;
         int fleeMushCount = 0;
@@ -96,16 +108,13 @@ namespace Assignment3Centipede
 
         List<object> mushroomClassList = new List<object>();
         List<object> centipedeList = new List<object>();
-        List<Rectangle> centBoxList = new List<Rectangle>();
         List<Rectangle> bulletList = new List<Rectangle>();
-
-
-
 
         public void loadContent(ContentManager contentManager)
         {
             // Setup font
             m_font = contentManager.Load<SpriteFont>("Fonts/game");
+            m_bigFont = contentManager.Load<SpriteFont>("Fonts/menu");
 
             // Setup textures
             m_NormMush1Texture = contentManager.Load<Texture2D>("Images/MushNorm/NormMush0");
@@ -170,22 +179,28 @@ namespace Assignment3Centipede
                 new int[] { 100, 100, 100, 100, 100, 100, 100, 100 }
                 );
 
+            // Setup spider animation
+            spiderRenderer = new AnimatedSprite(
+                contentManager.Load<Texture2D>("Images/Spider"),
+                new int[] { 200, 200, 200, 200, 200, 200, 200, 200 }
+                );
+
+            // Setup scorpion animation
+            scorpionRenderer = new AnimatedSprite(
+                contentManager.Load<Texture2D>("Images/Scorpion"),
+                new int[] { 200, 200, 200, 200 }
+                );
+
             // Set up cenitpede
             //m_CentipedeBox = new Rectangle(m_graphics.GraphicsDevice.Viewport.Width / 6, 50, 25, 25);
-            
-            for (int i = 0; i < 1; i++)
-            {
-                centBoxList.Add(new Rectangle());
-            }
 
             for (int i = 0; i < 3; i++)
             {
                 Objects.Centipede centipede;
                 centipede = new Objects.Centipede(
-                //centipedeList.Add(new Objects.Centipede(
                     new Vector2(25, 25), // image size
                     new Vector2((m_graphics.GraphicsDevice.Viewport.Width / 2) - (i * 30), 50), // starting x y pos
-                    5 / 1000.0, // Pixels per second
+                    3 / 1000.0, // Pixels per second
                     new Rectangle(),
                     m_graphics);
 
@@ -194,17 +209,12 @@ namespace Assignment3Centipede
 
         }
 
-        public void initialize()
-        {
-            // Read the controls from persistence
-            //m_input.registerHandle(Keys.Left, moveLeft);
-        }
-
+        public void initialize() { }
 
         public void processInput(GameTime gameTime)
         {
-            // 
-            if (shipAlive == true)
+            // Check if ship is alive or game is still running
+            if (shipAlive == true && !gameWon && !gameLost)
             {
                 // Check for ship movement
                 moveShip();
@@ -347,11 +357,73 @@ namespace Assignment3Centipede
             // Take care of centipede
             updateCentipede(gameTime);
 
+            // Spawn Spider if score is above 200
+            if (score > 50 && spider == null)
+            {
+                // Get random x flee spawn position
+                Random xPos = new Random();
+                int randX = xPos.Next(0,2);
+
+                // Spawn on right
+                if (randX == 0)
+                { 
+                    randX = m_graphics.GraphicsDevice.Viewport.Width - 25;
+                }
+                // Spawn on left
+                else
+                    randX = 40;
+
+                // Spawn flee
+                if (spider == null)
+                {
+                    spawnFlee = false;
+                    spider = new Objects.Spider(
+                        new Vector2(40, 40), // image size
+                        new Vector2(randX,  600), // starting x y pos
+                        5 / 1000.0, // Pixels per second
+                        m_SpiderBox,
+                        m_graphics);
+                }
+            }
+
+
+
+            // Spawn scorpion if score is greater than 100
+            if (score > 100 && scorpion == null)
+            {
+                // Get random x flee spawn position
+                Random yPos = new Random();
+                int randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
+                while (randY % 30 != 0)
+                {
+                    randY = yPos.Next(50, m_graphics.GraphicsDevice.Viewport.Height - 100);
+                }
+
+                // Spawn flee
+                if (scorpion == null)
+                {
+                    //spawnFlee = false;
+                    scorpion = new Objects.Scorpion(
+                        new Vector2(30, 30), // image size
+                        new Vector2(25, randY), // starting x y pos
+                        4 / 1000.0, // Pixels per second
+                        m_ScorpionBox,
+                        m_graphics);
+                }
+            }
+
+
             // Update flee animation
             fleaRenderer.update(gameTime);
 
-            // Update flee animation
+            // Update centipede animation
             centipedeRenderer.update(gameTime);
+
+            // Update spider animation
+            spiderRenderer.update(gameTime);
+
+            // Update scorpion animation
+            scorpionRenderer.update(gameTime);
         }
 
         private void updateBullets(GameTime gameTime)
@@ -440,19 +512,37 @@ namespace Assignment3Centipede
                     for (int c = 0; c < centipedeList.Count; c++)
                     {
                         var cent = (Objects.Centipede)centipedeList.ElementAt(c);
-                        if ((bullet.X > cent.xPos - 25) && (bullet.X < cent.xPos + 25) && (bullet.Y <= cent.yPos + 20) && (bullet.Y > cent.yPos - 20))
+
+                        if (cent != null)
                         {
-                            // Remove centipede piece
-                            centipedeList.RemoveAt(i);
-
-                            // Update score
-                            score += 300;
-
-                            // Remove bullet
-                            if (i < bulletList.Count)
+                            if ((bullet.X > cent.xPos - 25) && (bullet.X < cent.xPos + 25) && (bullet.Y <= cent.yPos + 20) && (bullet.Y > cent.yPos - 20))
                             {
-                                bulletList.RemoveAt(i);
-                                bulletAlive = false;
+                                if (centipedeList.Count > 1)
+                                {
+                                    // Remove centipede piece
+                                    centipedeList.RemoveAt(c);
+
+                                    // Update score
+                                    score += 300;
+                                }
+
+                                // You win
+                                else
+                                {
+                                    // Stop drawing centipede
+                                    cent = null;
+                                    centipedeList[c] = cent;
+                                    // Update high score
+                                    highScore = score;
+                                    gameWon = true;
+                                }
+
+                                // Remove bullet
+                                if (i < bulletList.Count)
+                                {
+                                    bulletList.RemoveAt(i);
+                                    bulletAlive = false;
+                                }
                             }
                         }
                         else
@@ -563,10 +653,6 @@ namespace Assignment3Centipede
                 {
                     // Get a copy
                     var mushList = mushroomList[m];
-                    //var centList = centipedeList[i];
-
-                    // Get a copy of centipede
-                    //var cent = (Objects.Centipede)centipedeList.ElementAt(i);
 
                     if (cent != null)
                     {
@@ -743,8 +829,6 @@ namespace Assignment3Centipede
                             centYPos = cent.yPos;
                         }
 
-
-
                         // Check collison on ship
                         if ((m_ShipBox.X >= cent.xPos - 30) && (m_ShipBox.X <= cent.xPos + 30) &&
                             (m_ShipBox.Y >= cent.yPos - 20) && (m_ShipBox.Y <= cent.yPos + 20) && shipAlive)
@@ -752,16 +836,15 @@ namespace Assignment3Centipede
                             // Kill ship
                             killShip();
                         }
-
                     }
 
                     mushroomList[m] = mushList;
                     //centipedeList[i] = cent;
 
                 }
+
                 centipedeList[i] = cent;
                 //mushroomList[m] = mushList;
-
             }
         }
 
@@ -785,6 +868,7 @@ namespace Assignment3Centipede
             // Game over
             else
             {
+                gameLost = true;
                 shipAlive = false;
             }             
         }
@@ -845,6 +929,18 @@ namespace Assignment3Centipede
                 fleaRenderer.draw(spriteBatch, flea);
             }
 
+            // Draw spider
+            if (spider != null)
+            {
+                spiderRenderer.draw(spriteBatch, spider);
+            }
+
+            // Draw scorpion
+            if (scorpion != null)
+            {
+                scorpionRenderer.draw(spriteBatch, scorpion);
+            }
+
             // Draw centipede
             for (int i  = 0; i < centipedeList.Count; i++)
             {
@@ -885,6 +981,19 @@ namespace Assignment3Centipede
                 spriteBatch.Draw(m_ShipTexture, m_ShipBoxLife1, Color.White);
             }
 
+            // Draw you win
+            if (gameWon)
+            {                
+                spriteBatch.DrawString(m_bigFont, Win_MESSAGE, new Vector2(m_graphics.GraphicsDevice.Viewport.Width / 2, 
+                    m_graphics.GraphicsDevice.Viewport.Height / 2), Color.Red);
+            }
+
+            // Draw you lost
+            if (gameLost)
+            {
+                spriteBatch.DrawString(m_bigFont, LOST_MESSAGE, new Vector2(m_graphics.GraphicsDevice.Viewport.Width / 2,
+                    m_graphics.GraphicsDevice.Viewport.Height / 2), Color.Red);
+            }
         }
     }
 }
