@@ -8,8 +8,6 @@ namespace Assignment3Centipede.Objects
         Rectangle m_spiderRec;
         GraphicsDeviceManager m_graphics;
 
-        int hitSpider = 0;
-
         public Spider(Vector2 size, Vector2 center, double moveRate, Rectangle spiderRec, GraphicsDeviceManager m_graphics) : base(size, center)
         {
             m_moveRate = moveRate;
@@ -29,10 +27,9 @@ namespace Assignment3Centipede.Objects
             //set { m_center.Y = value; }
         }
 
-        public int HitFlee
+        public void moveUp(GameTime gameTime)
         {
-            get { return hitSpider; }
-            set { hitSpider = value; }
+            m_center.Y -= (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
         }
 
         public void moveDown(GameTime gameTime)
@@ -40,9 +37,14 @@ namespace Assignment3Centipede.Objects
             m_center.Y += (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
         }
 
-        public void hit()
+        public void moveLeft(GameTime gameTime)
         {
-            hitSpider++;
+            m_center.X -= (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public void moveRight(GameTime gameTime)
+        {
+            m_center.X += (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
         }
     }
 }

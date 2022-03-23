@@ -27,8 +27,13 @@ namespace Assignment3Centipede
         private const string LOST_MESSAGE = "YOU LOST!";
 
         int score = 0;
-        int highScore = 0;
+        int highScore;
 
+        public int getHighScore
+        {
+            get { return highScore; }
+        }
+        
         // Rectangles
         private Rectangle m_ShipBox;
         private Rectangle m_ShipBoxLife1;
@@ -74,6 +79,7 @@ namespace Assignment3Centipede
         int fleeMushCount = 0;
 
         double centYPos = 0;
+        int randXSpider = 0;
 
         bool goUp = false;
         bool goDown = true;
@@ -84,6 +90,9 @@ namespace Assignment3Centipede
         bool moveCentDown = false;
         bool moveCentLeft = true;
         bool moveCentRight = false;
+
+        bool moveSpiderUp = false;
+        bool moveSpiderDown = false;
 
         TimeSpan fireRateTimer = TimeSpan.FromSeconds(0);
         TimeSpan mushroomSpawnTimer = TimeSpan.FromSeconds(0);
@@ -294,7 +303,6 @@ namespace Assignment3Centipede
             if ((Keyboard.GetState().IsKeyDown(helpView.MoveUp)) && (m_ShipBox.Y >= (m_graphics.GraphicsDevice.Viewport.Height * .7)))
             {
                 int canMoveUp = 0;
-
                 for (int i = 0; i < mushroomList.Count; i++)
                 {
                     var mushroom = mushroomList[i];
@@ -357,38 +365,122 @@ namespace Assignment3Centipede
             // Take care of centipede
             updateCentipede(gameTime);
 
-            // Spawn Spider if score is above 200
-            if (score > 50 && spider == null)
+            // Spawn Spider if score is above 100
+            if (score > 100 && spider == null)
             {
                 // Get random x flee spawn position
                 Random xPos = new Random();
-                int randX = xPos.Next(0,2);
+                randXSpider = xPos.Next(0,2);
 
                 // Spawn on right
-                if (randX == 0)
-                { 
-                    randX = m_graphics.GraphicsDevice.Viewport.Width - 25;
+                if (randXSpider == 0)
+                {
+                    randXSpider = m_graphics.GraphicsDevice.Viewport.Width - 25;
                 }
                 // Spawn on left
                 else
-                    randX = 40;
+                    randXSpider = 40;
 
-                // Spawn flee
+                // Spawn spider
                 if (spider == null)
                 {
-                    spawnFlee = false;
+                    //spawnFlee = false;
                     spider = new Objects.Spider(
                         new Vector2(40, 40), // image size
-                        new Vector2(randX,  600), // starting x y pos
-                        5 / 1000.0, // Pixels per second
+                        new Vector2(randXSpider,  800), // starting x y pos
+                        200 / 1000.0, // Pixels per second
                         m_SpiderBox,
                         m_graphics);
                 }
             }
 
+            // Update spider
+            if (spider != null)
+            {
+                // Move spider right
+                if ((spider.xPos < m_graphics.GraphicsDevice.Viewport.Width - 40) && randXSpider == 40)
+                {
+                    if (spider.yPos > m_graphics.GraphicsDevice.Viewport.Height * .7 && !moveSpiderDown)
+                    {
+                        moveSpiderDown = false;
+                        moveSpiderUp = true;
+                    }
+                    if (moveSpiderUp)
+                    { 
+                        spider.moveUp(gameTime);
+                        spider.moveRight(gameTime);
+                    }
+
+                    if (spider.yPos <= m_graphics.GraphicsDevice.Viewport.Height * .7)
+                    {
+                        moveSpiderUp = false;
+                        moveSpiderDown = true;
+                    }
+
+                    if (moveSpiderDown)
+                    { 
+                        spider.moveDown(gameTime);
+                        spider.moveRight(gameTime);
+                    }
+
+                    if (spider.yPos >= m_graphics.GraphicsDevice.Viewport.Height - 40)
+                    {
+                        moveSpiderUp = true;
+                        moveSpiderDown = false;
+                    }
+                }
+                if (spider.xPos > (m_graphics.GraphicsDevice.Viewport.Width - 40))
+                {
+                    randXSpider = m_graphics.GraphicsDevice.Viewport.Width - 25;
+                }
+
+                // Move spider left
+                if ((spider.xPos > 40) && randXSpider == m_graphics.GraphicsDevice.Viewport.Width - 25)
+                {
+                    if (spider.yPos > m_graphics.GraphicsDevice.Viewport.Height * .7 && !moveSpiderDown)
+                    {
+                        moveSpiderDown = false;
+                        moveSpiderUp = true;
+                    }
+                    if (moveSpiderUp)
+                    {
+                        spider.moveUp(gameTime);
+                        spider.moveLeft(gameTime);
+                    }
+
+                    if (spider.yPos <= m_graphics.GraphicsDevice.Viewport.Height * .7)
+                    {
+                        moveSpiderUp = false;
+                        moveSpiderDown = true;
+                    }
+
+                    if (moveSpiderDown)
+                    {
+                        spider.moveDown(gameTime);
+                        spider.moveLeft(gameTime);
+                    }
+
+                    if (spider.yPos >= m_graphics.GraphicsDevice.Viewport.Height - 40)
+                    {
+                        moveSpiderUp = true;
+                        moveSpiderDown = false;
+                    }
+                }
+                if (spider.xPos < 40)
+                {
+                    randXSpider = 40;
+                }
+
+                // Check collison on ship
+                if ((m_ShipBox.X >= spider.xPos - 30) && (m_ShipBox.X <= spider.xPos + 30) && (m_ShipBox.Y <= spider.yPos + 20) && shipAlive)
+                {
+                    // Kill ship
+                    killShip();
+                }
+            }
 
 
-            // Spawn scorpion if score is greater than 100
+            // Spawn scorpion if score is greater than 300
             if (score > 100 && scorpion == null)
             {
                 // Get random x flee spawn position
@@ -406,13 +498,25 @@ namespace Assignment3Centipede
                     scorpion = new Objects.Scorpion(
                         new Vector2(30, 30), // image size
                         new Vector2(25, randY), // starting x y pos
-                        4 / 1000.0, // Pixels per second
+                        200 / 1000.0, // Pixels per second
                         m_ScorpionBox,
                         m_graphics);
                 }
             }
 
+            if (scorpion != null)
+            {
+                if (scorpion.xPos < m_graphics.GraphicsDevice.Viewport.Width)
+                {
+                    scorpion.moveRight(gameTime);
+                }
 
+                if (scorpion.xPos > m_graphics.GraphicsDevice.Viewport.Width)
+                {
+                    scorpion = null;
+                }
+            }
+            
             // Update flee animation
             fleaRenderer.update(gameTime);
 
@@ -522,6 +626,12 @@ namespace Assignment3Centipede
                                     // Remove centipede piece
                                     centipedeList.RemoveAt(c);
 
+                                    mushroomList.Add(new Rectangle((int)cent.xPos, (int)cent.yPos, 25, 25));
+                                    mushroomClassList.Add(new Mushroom());
+
+                                    // Spawn a new mushroom
+
+
                                     // Update score
                                     score += 300;
                                 }
@@ -548,6 +658,48 @@ namespace Assignment3Centipede
                         else
                         {
                             centipedeList[c] = cent;
+                        }
+                    }
+
+                    // If spider is alive
+                    if (spider != null)
+                    {
+                        // Check for bullet collison on spider
+                        if ((bullet.X >= spider.xPos - 25) && (bullet.X <= spider.xPos + 25) && (bullet.Y <= spider.yPos + 20))
+                        {
+                            // Kill spider
+                            spider = null;
+                            
+                            // Update score
+                            score += 400;
+
+                            // Remove bullet
+                            if (i < bulletList.Count)
+                            {
+                                bulletList.RemoveAt(i);
+                                bulletAlive = false;
+                            }
+                        }
+                    }
+
+                    // If scorpion is alive
+                    if (scorpion != null)
+                    {
+                        // Check for bullet collison on scorpion
+                        if ((bullet.X >= scorpion.xPos - 25) && (bullet.X <= scorpion.xPos + 25) && (bullet.Y <= scorpion.yPos + 20))
+                        {
+                            // Kill spider
+                            scorpion = null;
+
+                            // Update score
+                            score += 1000;
+
+                            // Remove bullet
+                            if (i < bulletList.Count)
+                            {
+                                bulletList.RemoveAt(i);
+                                bulletAlive = false;
+                            }
                         }
                     }
 

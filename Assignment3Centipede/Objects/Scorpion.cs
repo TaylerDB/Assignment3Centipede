@@ -8,8 +8,6 @@ namespace Assignment3Centipede.Objects
         Rectangle m_scorpionRec;
         GraphicsDeviceManager m_graphics;
 
-        int hitScorpion = 0;
-
         public Scorpion(Vector2 size, Vector2 center, double moveRate, Rectangle scorpionRec, GraphicsDeviceManager m_graphics) : base(size, center)
         {
             m_moveRate = moveRate;
@@ -29,20 +27,14 @@ namespace Assignment3Centipede.Objects
             //set { m_center.Y = value; }
         }
 
-        public int HitFlee
+        public void moveLeft(GameTime gameTime)
         {
-            get { return hitScorpion; }
-            set { hitScorpion = value; }
+            m_center.X -= (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
         }
 
-        public void moveDown(GameTime gameTime)
+        public void moveRight(GameTime gameTime)
         {
-            m_center.Y += (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
-        }
-
-        public void hit()
-        {
-            hitScorpion++;
+            m_center.X += (float)(m_moveRate * gameTime.ElapsedGameTime.TotalMilliseconds);
         }
     }
 }
